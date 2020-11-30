@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Head from 'next/head'
 import cn from 'classnames'
 import { REST } from 'libs/fetch'
@@ -19,6 +19,7 @@ export default function Home() {
 
 	const [ value, setValue ] = useState("");
 	const [ state, setState ] = useState({mode: 0});
+	const inputRef = useRef();
 
 	const mode = state.mode;
 	useEffect(() => {
@@ -30,6 +31,12 @@ export default function Home() {
 			return () => clearTimeout(timeout);
 		}
 	}, [mode]);
+
+	useEffect(() => {
+		const interval = setInterval(() => setValue(inputRef.current.value), 100);
+
+		return () => clearInterval(interval);
+	}, []);
 
 	const onSend = (e) => {
 		e.preventDefault();
@@ -52,7 +59,7 @@ export default function Home() {
 			
 			if(!res.error){
 				setState({mode: 2, text: "Ваш ответ отправлен"});
-				setValue("");
+				inputRef.current.value = "";
 			}
 
 			if(res.error)
@@ -72,7 +79,10 @@ export default function Home() {
 				<h1>Оставьте свое пожелание</h1>
 				<div>
 					<label htmlFor="input">Введите пожелание, и оно впишется в образ</label>
-					<input id="input" name="word" type="text" autoComplete="off" value={value} onChange={(e) => setValue(e.target.value)}/>
+					<input id="input" name="word" type="text" 
+						autoComplete="off" 
+						ref={inputRef}
+					/>
 				</div>
 				<button className={cn("button", styles.button, value && styles.active)}>Отправить</button>
 			</form>
