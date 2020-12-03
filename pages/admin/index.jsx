@@ -10,6 +10,8 @@ export default function AdminPage() {
 
 	const [ search, setSearch ] = useState('');
 	const [ modal, setModal ] = useState(null);
+	const [ modal2, setModal2 ] = useState(null);
+
 	const { data } = useSWR('/api/admin-words', GET, { refreshInterval: 1000 });
 
 	if(!data) return <div></div>
@@ -37,13 +39,28 @@ export default function AdminPage() {
 		});
 	}
 
+	const deleteAll = () => {
+		setModal2({top: 100});
+		document.addEventListener('mousedown', () => setModal2(null), {once: true});
+	}
+
+	console.log(modal2);
+
+	const onConfirm2 = () => {
+		REST('/api/delete-all', {}, 'DELETE').then(res => {
+			if(!res.error)
+				mutate('/api/admin-words');
+		});
+	}
+
 	return (
 		<div className={styles.main} style={{justifyContent: "flex-start"}}>
 			<Head>
 				<title>Админ-панель</title>
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
-			<h1>Админ-панель</h1>
+			<h2>Админ-панель</h2>
+			<button className={styles.deleteAll} onClick={deleteAll}>X</button>
 			<input className={styles.search} value={search} onChange={e => setSearch(e.target.value)} placeholder="Поиск..."/>
 			<ul className={styles.list}>
 				{_data.map(item => (
@@ -66,6 +83,17 @@ export default function AdminPage() {
 					<div className={styles.buttons}>
 						<button>Отмена</button>
 						<button onMouseDown={onConfirm}>Удалить</button>
+					</div>
+				</div>
+			)}
+			{modal2 && (
+				<div className={styles.modal} style={{top: modal2.top}}>
+					<div className={styles.sub}>
+						Удалить все сообщения?
+					</div>
+					<div className={styles.buttons}>
+						<button>Отмена</button>
+						<button onMouseDown={onConfirm2}>Удалить</button>
 					</div>
 				</div>
 			)}
